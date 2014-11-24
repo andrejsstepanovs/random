@@ -1,0 +1,156 @@
+<?php
+
+namespace App\Command;
+
+use App\Service\Utils;
+use App\Service\Output;
+use App\Service\Arguments;
+use App\Service\Stream;
+use App\Service\Reader;
+
+
+/**
+ * Class Random
+ *
+ * @package App\Command
+ */
+class Random
+{
+    const TYPE_URL    = 'url';
+    const TYPE_PARAM  = 'parameter';
+    const TYPE_STDIN  = 'stdin';
+    const TYPE_RANDOM = 'rand';
+
+    /** @var Utils */
+    private $utils;
+
+    /** @var Output */
+    private $output;
+
+    /** @var Arguments */
+    private $arguments;
+
+    /** @var Stream */
+    private $stream;
+
+    /** @var Reader */
+    private $reader;
+
+    /**
+     * @param Arguments $arguments
+     *
+     * @return $this
+     */
+    public function setArguments(Arguments $arguments)
+    {
+        $this->arguments = $arguments;
+
+        return $this;
+    }
+
+    /**
+     * @param Output $output
+     *
+     * @return $this
+     */
+    public function setOutput(Output $output)
+    {
+        $this->output = $output;
+
+        return $this;
+    }
+
+    /**
+     * @param Stream $stream
+     *
+     * @return $this
+     */
+    public function setStream(Stream $stream)
+    {
+        $this->stream = $stream;
+
+        return $this;
+    }
+
+    /**
+     * @param Utils $utils
+     *
+     * @return $this
+     */
+    public function setUtils(Utils $utils)
+    {
+        $this->utils = $utils;
+
+        return $this;
+    }
+
+    /**
+     * @param Reader $reader
+     *
+     * @return $this
+     */
+    public function setReader(Reader $reader)
+    {
+        $this->reader = $reader;
+
+        return $this;
+    }
+
+    public function execute()
+    {
+        $count  = $this->arguments->getNumericArgument(1);
+        $string = $this->arguments->getOtherArguments(2);
+
+        $streams = $this->getStreams($string);
+        $stream  = $this->selectStream($streams);
+        $random  = $this->reader->getRandom($stream, $count);
+        $this->stream->close($stream);
+
+        $this->output->out($random);
+    }
+
+    /**
+     * @param string $param
+     *
+     * @return \resource[]
+     */
+    private function getStreams($param)
+    {
+        $resource = $this->stream;
+
+        $stream = [];
+        if (!empty($param)) {
+            $stream[self::TYPE_URL]   = $resource->open($param);
+            $stream[self::TYPE_PARAM] = $resource->open('data:text/plain,' . $param);
+        }
+        $stream[self::TYPE_STDIN]  = $resource->open('php://stdin');
+        $stream[self::TYPE_RANDOM] = $resource->open('/dev/urandom');
+
+        return $resource->filterValidStreams($stream);
+    }
+
+    /**
+     * @param \resource[] $streams
+     *
+     * @return \resource
+     * @throws \RuntimeException
+     */
+    private function selectStream(array $streams)
+    {
+        $selected = false;
+        foreach ($streams as $key => $stream) {
+            if (!$selected && $this->stream->exists($stream)) {
+                $this->output->message('selected stream: ' . $key);
+                $selected = $key;
+            } else {
+                $this->stream->close($stream);
+            }
+        }
+
+        if ($selected === false) {
+            throw new \RuntimeException('Failed to find valid stream');
+        }
+
+        return $streams[$selected];
+    }
+}
