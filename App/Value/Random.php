@@ -2,10 +2,9 @@
 
 namespace App\Value;
 
-
-use App\Resource\Stream as ResourceStream;
 use App\Resource\Stream;
 use App\Service\StreamFactory;
+
 
 /**
  * Class Random
@@ -14,7 +13,7 @@ use App\Service\StreamFactory;
  */
 class Random
 {
-    /** @var ResourceStream */
+    /** @var Stream */
     private $stream;
 
     /** @var array */
@@ -24,7 +23,7 @@ class Random
     ];
 
     /**
-     * @param ResourceStream $streamFactory
+     * @param Stream $streamFactory
      */
     public function __construct(StreamFactory $streamFactory)
     {
@@ -33,7 +32,7 @@ class Random
     }
 
     /**
-     * @return ResourceStream
+     * @return Stream
      */
     private function createStream()
     {
@@ -41,7 +40,7 @@ class Random
     }
 
     /**
-     * @return ResourceStream
+     * @return Stream
      */
     public function getStream()
     {
@@ -96,11 +95,11 @@ class Random
     }
 
     /**
-     * @param ResourceStream $bufferStream
+     * @param Stream $bufferStream
      *
      * @return $this
      */
-    private function switchStreams(ResourceStream $bufferStream)
+    private function switchStreams(Stream $bufferStream)
     {
         $this->stream->close();
         $this->stream = $bufferStream;
@@ -158,6 +157,7 @@ class Random
         } else {
             $size = 0;
             $this->stream->rewind();
+
             while ($chars = $this->stream->read()) {
                 $size += mb_strlen($chars);
             }

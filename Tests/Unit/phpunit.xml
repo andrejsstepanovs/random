@@ -9,6 +9,7 @@
     <filter>
         <blacklist>
             <directory>../../Tests</directory>
+            <file>../../autoload.php</file>
         </blacklist>
     </filter>
     <logging>

@@ -53,7 +53,7 @@ class OutputTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @return Stream|\PHPUnit_Framework_MockObject_MockObject
+     * @return StreamFactory|\PHPUnit_Framework_MockObject_MockObject
      */
     public function getStreamFactoryMock()
     {

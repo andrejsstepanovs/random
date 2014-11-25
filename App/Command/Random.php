@@ -23,9 +23,6 @@ class Random
     const TYPE_STDIN  = 'stdin';
     const TYPE_RANDOM = 'rand';
 
-    /** @var Utils */
-    private $utils;
-
     /** @var Output */
     private $output;
 
@@ -67,21 +64,9 @@ class Random
      *
      * @return $this
      */
-    public function setStream(StreamFactory $stream)
+    public function setStreamFactory(StreamFactory $stream)
     {
         $this->streamFactory = $stream;
-
-        return $this;
-    }
-
-    /**
-     * @param Utils $utils
-     *
-     * @return $this
-     */
-    public function setUtils(Utils $utils)
-    {
-        $this->utils = $utils;
 
         return $this;
     }
@@ -98,18 +83,23 @@ class Random
         return $this;
     }
 
+    /**
+     * @return $this
+     */
     public function execute()
     {
         $count  = $this->arguments->getNumericArgument(1);
         $string = $this->arguments->getOtherArguments(2);
 
-        $value        = new ValueRandom($this->streamFactory);
+        $value = new ValueRandom($this->streamFactory);
 
         $streams = $this->getStreams($string);
         $stream  = $this->selectStream($streams);
         $random  = $this->reader->getRandom($stream, $count, $value);
 
         $this->output->out($random->getStream());
+
+        return $this;
     }
 
     /**
@@ -147,7 +137,7 @@ class Random
         $selected = false;
         foreach ($streams as $key => $stream) {
             if (!$selected && $stream->exists()) {
-                $this->output->message('selected stream: ' . $key);
+                //$this->output->message('selected stream: ' . $key);
                 $selected = $key;
             } else {
                 $stream->close();
