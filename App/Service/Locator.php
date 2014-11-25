@@ -21,6 +21,32 @@ class Locator
     /** @var array */
     private $services = [];
 
+    /** @var array */
+    private $config;
+
+    /**
+     * @param array $config
+     */
+    public function __construct(array $config)
+    {
+        $this->config = $config;
+    }
+
+    /**
+     * @param string $key
+     *
+     * @return mixed
+     * @throws \InvalidArgumentException
+     */
+    private function getConfigValue($key)
+    {
+        if (array_key_exists($key, $this->config)) {
+            return $this->config[$key];
+        }
+
+        throw new \InvalidArgumentException('Config "' . $key . ' not provided');
+    }
+
     /**
      * @return Output
      */
@@ -68,7 +94,7 @@ class Locator
         if (!isset($this->services[self::SERVICE_READER])) {
             $reader = new Reader();
             $reader->setUtils($this->getServiceUtils());
-            $reader->setTimeout(1);
+            $reader->setTimeout($this->getConfigValue('timeout'));
 
             $this->services[self::SERVICE_READER] = $reader;
         }

@@ -7,7 +7,8 @@ use \App\Service\Locator as ServiceLocator;
 use \App\Resource\Arguments;
 
 
-$locator = new ServiceLocator();
+$config  = ['timeout' => 3];
+$locator = new ServiceLocator($config);
 
 try {
     $arguments = (new Arguments())->setArguments($argv);
