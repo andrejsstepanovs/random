@@ -77,12 +77,17 @@ class Stream
         return $this->resource;
     }
 
+    /**
+     * @return $this
+     */
     public function close()
     {
         $resource = $this->getResource();
         if (is_object($resource)) {
             fclose($resource);
         }
+
+        return $this;
     }
 
     /**
@@ -118,7 +123,7 @@ class Stream
     /**
      * @return array
      */
-    public function getMeta()
+    protected function getMeta()
     {
         if ($this->meta === null) {
             $this->meta = stream_get_meta_data($this->getResource());
@@ -167,7 +172,7 @@ class Stream
      *
      * @return array
      */
-    public function getStat($force = false)
+    protected function getStat($force = false)
     {
         if ($this->stat === null || $force) {
             $this->stat = fstat($this->getResource());
@@ -189,11 +194,13 @@ class Stream
     }
 
     /**
+     * @param int $size
+     *
      * @return string
      */
-    public function read()
+    public function read($size = 1024)
     {
-        return fread($this->getResource(), 1024);
+        return fread($this->getResource(), $size);
     }
 
     /**
@@ -220,13 +227,8 @@ class Stream
      */
     public function getContents()
     {
-        $this->seek(0);
+        $this->rewind();
         return stream_get_contents($this->getResource());
-    }
-
-    public function __destruct()
-    {
-        $this->close();
     }
 
     /**
@@ -281,5 +283,13 @@ class Stream
         $this->firstChar = null;
 
         return $char;
+    }
+
+    /**
+     * Close connection
+     */
+    public function __destruct()
+    {
+        $this->close();
     }
 }
