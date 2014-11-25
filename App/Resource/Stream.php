@@ -193,15 +193,22 @@ class Stream
     }
 
     /**
-     * @param string $message
+     * @param string|Stream $message
      *
-     * @return int
+     * @return $this
      */
     public function write($message)
     {
-        $bytesWritten = fwrite($this->getResource(), $message);
+        if ($message instanceof Stream) {
+            $message->rewind();
+            while ($string = $message->read()) {
+                $this->write($string);
+            }
+        } else {
+            fwrite($this->getResource(), $message);
+        }
 
-        return $bytesWritten > 0;
+        return $this;
     }
 
     /**

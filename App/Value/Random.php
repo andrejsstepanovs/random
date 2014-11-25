@@ -34,6 +34,14 @@ class Random
     }
 
     /**
+     * @return ResourceStream
+     */
+    public function getStream()
+    {
+        return $this->stream;
+    }
+
+    /**
      * @param string $char
      *
      * @return $this

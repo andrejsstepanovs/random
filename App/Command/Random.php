@@ -111,7 +111,7 @@ class Random
         $stream  = $this->selectStream($streams);
         $random  = $this->reader->getRandom($stream, $count, $value);
 
-        $this->output->out($random);
+        $this->output->out($random->getStream());
     }
 
     /**

@@ -73,32 +73,45 @@ class Output
 
     /**
      * @param string $string
+     * @param bool   $newline
      */
-    public function error($string)
+    public function error($string, $newline = true)
     {
-        $this->getResource(self::TYPE_ERR)->write($this->prepareMessage($string));
+        $this->write(self::TYPE_ERR, $string, $newline);
     }
 
     /**
      * @param string $string
+     * @param bool   $newline
      */
-    public function out($string)
+    public function out($string, $newline = true)
     {
-        $this->getResource(self::TYPE_STDOUT)->write($this->prepareMessage($string));
+        $this->write(self::TYPE_STDOUT, $string, $newline);
     }
 
     /**
      * @param string $string
+     * @param bool   $newline
      */
-    public function message($string)
+    public function message($string, $newline = true)
     {
-        $this->getResource(self::TYPE_OUTPUT)->write($this->prepareMessage($string));
+        $this->write(self::TYPE_OUTPUT, $string, $newline);
+    }
+
+    /**
+     * @param string $type
+     * @param mixed  $string
+     * @param bool   $newLine
+     */
+    private function write($type, $string, $newLine = true)
+    {
+        $this->getResource($type)->write($this->prepareMessage($string, $newLine));
     }
 
     /**
      * @param mixed $data
      *
-     * @return string
+     * @return string|StreamResource
      */
     private function prepareMessage($data)
     {
@@ -107,6 +120,8 @@ class Output
         } elseif (is_object($data)) {
             if (method_exists($data, '__toString')) {
                 $string = strval($data);
+            } elseif ($data instanceof StreamResource) {
+                return $data;
             } else {
                 $string = var_export($data, true);
             }
