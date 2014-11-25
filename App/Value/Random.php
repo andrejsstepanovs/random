@@ -13,6 +13,12 @@ class Random
     /** @var array */
     private $chars = [];
 
+    /** @var array */
+    private $escapeChars = [
+        ' ',
+        PHP_EOL
+    ];
+
     /**
      * @param string $char
      *
@@ -42,7 +48,7 @@ class Random
      */
     private function validate($char)
     {
-        if ($char == PHP_EOL) {
+        if (in_array($char, $this->escapeChars, true)) {
             return false;
         }
 
@@ -66,11 +72,9 @@ class Random
      */
     public function slice($count)
     {
-        if ($this->count() < $count) {
-            throw new \RuntimeException('Not enough character count');
+        if ($this->count() > $count) {
+            $this->chars = array_slice($this->chars, 0, $count);
         }
-
-        $this->chars = array_slice($this->chars, 0, $count);
 
         return $this;
     }
