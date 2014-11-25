@@ -1,12 +1,12 @@
 <?php
 
-namespace App\Service;
+namespace App\Resource;
 
 
 /**
  * Class Arguments
  *
- * @package App\Service
+ * @package App\Resource
  */
 class Arguments
 {

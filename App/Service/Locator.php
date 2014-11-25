@@ -17,7 +17,6 @@ class Locator
     const STREAM_FACTORY = 'service.streams';
     const SERVICE_READER  = 'service.reader';
     const SERVICE_UTILS   = 'service.utils';
-    const ARGUMENTS       = 'arguments';
 
     /** @var array */
     private $services = [];
@@ -36,7 +35,6 @@ class Locator
 
         return $this->services[self::SERVICE_OUTPUT];
     }
-
 
     /**
      * @return Utils
@@ -75,18 +73,6 @@ class Locator
         }
 
         return $this->services[self::SERVICE_READER];
-    }
-
-    /**
-     * @return Arguments
-     */
-    public function getArguments()
-    {
-        if (!isset($this->services[self::ARGUMENTS])) {
-            $this->services[self::ARGUMENTS] = new Arguments();
-        }
-
-        return $this->services[self::ARGUMENTS];
     }
 
     /**

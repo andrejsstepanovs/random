@@ -4,13 +4,13 @@
 include 'autoload.php';
 
 use \App\Service\Locator as ServiceLocator;
+use \App\Resource\Arguments;
 
 
 $locator = new ServiceLocator();
 
 try {
-    $arguments = $locator->getArguments()->setArguments($argv);
-
+    $arguments = (new Arguments())->setArguments($argv);
     $locator->getCommandRandom()
             ->setArguments($arguments)
             ->execute();
