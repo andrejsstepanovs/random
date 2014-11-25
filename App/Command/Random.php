@@ -123,7 +123,7 @@ class Random
             $streams[self::TYPE_PARAM] = $factory->create('data:text/plain,' . $param);
         }
         $streams[self::TYPE_STDIN]  = $factory->create('php://stdin');
-        $streams[self::TYPE_RANDOM] = $factory->create('/dev/urandom');
+        $streams[self::TYPE_RANDOM] = $factory->create('/dev/urandom')->setIsBinary(true);
 
         return array_filter(
             $streams,

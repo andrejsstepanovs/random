@@ -24,7 +24,10 @@ class Stream
     private $stat;
 
     /** @var bool */
-    private $binary;
+    private $binary = false;
+
+    /** @var string */
+    private $firstChar;
 
     /**
      * @param \resource $resource
@@ -32,6 +35,18 @@ class Stream
     public function __construct($filename, $mode)
     {
         $this->resource = $this->open($filename, $mode);
+    }
+
+    /**
+     * @param bool $isBinary
+     *
+     * @return $this
+     */
+    public function setIsBinary($isBinary)
+    {
+        $this->binary = $isBinary;
+
+        return $this;
     }
 
     /**
@@ -122,11 +137,9 @@ class Stream
             $this->binary = false;
             if ($meta[self::META_WRAPPER_TYPE] != 'http') {
                 $file = $meta['uri'];
-                if (is_file($file)) {
-                    $fileInfo = finfo_open(FILEINFO_MIME);
-                    $mime     = finfo_file($fileInfo, $file);
-                    $this->binary = strpos($mime, 'charset=binary') !== false;
-                }
+                $fileInfo = finfo_open(FILEINFO_MIME);
+                $mime     = finfo_file($fileInfo, $file);
+                $this->binary = strpos($mime, 'charset=binary') !== false;
             }
         }
 
@@ -209,6 +222,7 @@ class Stream
                 stream_set_blocking($stream, false);
                 $input = fread($stream, 1);
                 if (!empty($input)) {
+                    $this->firstChar = $input;
                     return true;
                 }
                 break;
@@ -218,5 +232,17 @@ class Stream
         }
 
         return false;
+    }
+
+    /**
+     * @return string
+     */
+    public function getFirstChar()
+    {
+        $char = $this->firstChar;
+
+        $this->firstChar = null;
+
+        return $char;
     }
 }

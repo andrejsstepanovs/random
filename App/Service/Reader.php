@@ -72,6 +72,11 @@ class Reader
                 break;
             }
 
+            $firstChar = $stream->getFirstChar();
+            if ($firstChar) {
+                $string = $firstChar . $string;
+            }
+
             if ($binary) {
                 $string = bin2hex($string);
             }
