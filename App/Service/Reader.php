@@ -76,13 +76,13 @@ class Reader
                 $string = bin2hex($string);
             }
 
-            if (empty($string)) {
-                throw new \RuntimeException('STDIN missing');
+            $size = strlen($string);
+            if ($size == 1) {
+                continue;
             }
 
             // we don't know if there will be more
             while ($random->count() < $count) {
-                $size = strlen($string);
                 $rand = $this->utils->random(0, $size - 1);
                 $char = substr($string, $rand, 1);
 
@@ -92,6 +92,10 @@ class Reader
                     $random->shuffle()->slice($count);
                 }
             }
+        }
+
+        if (!$random->count()) {
+            throw new \RuntimeException('STDIN have not enough characters');
         }
     }
 
