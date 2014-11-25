@@ -8,6 +8,7 @@ use App\Service\StreamFactory;
 use App\Service\Reader;
 use App\Resource\Arguments;
 use App\Resource\Stream as StreamResource;
+use App\Value\Random as ValueRandom;
 
 
 /**
@@ -104,7 +105,7 @@ class Random
 
         $streams = $this->getStreams($string);
         $stream  = $this->selectStream($streams);
-        $random  = $this->reader->getRandom($stream, $count);
+        $random  = $this->reader->getRandom($stream, $count, new ValueRandom());
 
         $this->output->out($random);
     }

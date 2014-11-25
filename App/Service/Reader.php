@@ -107,14 +107,13 @@ class Reader
     /**
      * @param StreamResource $stream
      * @param int            $count
+     * @param ValueRandom    $random
      *
      * @return ValueRandom
      * @throws \RuntimeException
      */
-    public function getRandom(StreamResource $stream, $count)
+    public function getRandom(StreamResource $stream, $count, ValueRandom $random)
     {
-        $random = new ValueRandom();
-
         $seekable = $stream->getMetaValue(StreamResource::META_SEEKABLE);
         $type     = $stream->getMetaValue(StreamResource::META_STREAM_TYPE);
 
