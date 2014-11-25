@@ -100,7 +100,10 @@ class Reader
     {
         $random = new ValueRandom();
 
-        if ($stream->getMetaValue('seekable') && $stream->getMetaValue('stream_type') != 'STDIO') {
+        $seekable = $stream->getMetaValue(StreamResource::META_SEEKABLE);
+        $type     = $stream->getMetaValue(StreamResource::META_STREAM_TYPE);
+
+        if ($seekable && $type != 'STDIO') {
             $this->getRandomFromSeekableFile($stream, $random, $count);
         } else {
             $this->getRandomFromStream($stream, $random, $count);

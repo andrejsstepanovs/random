@@ -10,7 +10,9 @@ namespace App\Resource;
  */
 class Stream
 {
-    const TYPE = 'wrapper_type';
+    const META_WRAPPER_TYPE = 'wrapper_type';
+    const META_SEEKABLE     = 'seekable';
+    const META_STREAM_TYPE  = 'stream_type';
 
     /** @var \resource */
     private $resource;
@@ -118,7 +120,7 @@ class Stream
         if ($this->binary === null) {
             $meta = $this->getMeta();
             $this->binary = false;
-            if ($meta[self::TYPE] != 'http') {
+            if ($meta[self::META_WRAPPER_TYPE] != 'http') {
                 $file = $meta['uri'];
                 if (is_file($file)) {
                     $fileInfo = finfo_open(FILEINFO_MIME);
