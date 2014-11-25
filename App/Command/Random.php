@@ -103,9 +103,13 @@ class Random
         $count  = $this->arguments->getNumericArgument(1);
         $string = $this->arguments->getOtherArguments(2);
 
+        $stream       = $this->streamFactory->create('php://temp', 'rw');
+        $bufferStream = $this->streamFactory->create('php://temp', 'rw');
+        $value        = new ValueRandom($stream, $bufferStream);
+
         $streams = $this->getStreams($string);
         $stream  = $this->selectStream($streams);
-        $random  = $this->reader->getRandom($stream, $count, new ValueRandom());
+        $random  = $this->reader->getRandom($stream, $count, $value);
 
         $this->output->out($random);
     }

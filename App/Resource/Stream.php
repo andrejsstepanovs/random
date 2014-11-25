@@ -86,13 +86,25 @@ class Stream
     }
 
     /**
+     * @return $this
+     */
+    public function rewind()
+    {
+        rewind($this->getResource());
+
+        return $this;
+    }
+
+    /**
      * @param int $offset
      *
-     * @return int
+     * @return $this
      */
     public function seek($offset)
     {
-        return fseek($this->getResource(), $offset);
+        fseek($this->getResource(), $offset);
+
+        return $this;
     }
 
     /**
@@ -190,6 +202,15 @@ class Stream
         $bytesWritten = fwrite($this->getResource(), $message);
 
         return $bytesWritten > 0;
+    }
+
+    /**
+     * @return string
+     */
+    public function getContents()
+    {
+        $this->seek(0);
+        return stream_get_contents($this->getResource());
     }
 
     public function __destruct()
