@@ -37,10 +37,9 @@ class Reader
      */
     public function getRandom(StreamResource $stream, $count)
     {
-        $meta = $stream->getMeta();
         $random = new ValueRandom();
 
-        if ($meta['seekable'] && $meta['stream_type'] != 'STDIO') {
+        if ($stream->getMetaValue('seekable') && $stream->getMetaValue('stream_type') != 'STDIO') {
 
             $size = $stream->getSize();
             while ($random->count() < $count) {

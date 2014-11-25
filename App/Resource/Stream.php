@@ -95,6 +95,22 @@ class Stream
     }
 
     /**
+     * @param string $key
+     *
+     * @return string|int
+     * @throws \InvalidArgumentException
+     */
+    public function getMetaValue($key)
+    {
+        $meta = $this->getMeta();
+        if (array_key_exists($key, $meta)) {
+            return $meta[$key];
+        }
+
+        throw new \InvalidArgumentException('Meta key "' . $key . '" not found');
+    }
+
+    /**
      * @return bool
      */
     public function isBinary()
