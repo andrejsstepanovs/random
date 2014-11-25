@@ -3,6 +3,7 @@
 namespace App\Service;
 
 use App\Value\Random as ValueRandom;
+use App\Resource\Stream as StreamResource;
 
 
 /**
@@ -14,21 +15,6 @@ class Reader
 {
     /** @var Utils */
     private $utils;
-
-    /** @var ValueRandom */
-    private $random;
-
-    /**
-     * @param ValueRandom $random
-     *
-     * @return $this
-     */
-    public function setRandom(ValueRandom $random)
-    {
-        $this->random = $random;
-
-        return $this;
-    }
 
     /**
      * @param Utils $utils
@@ -43,39 +29,33 @@ class Reader
     }
 
     /**
-     * @param mixed $stream
-     * @param int   $count
+     * @param StreamResource $stream
+     * @param int            $count
      *
      * @return ValueRandom
      * @throws \RuntimeException
      */
-    public function getRandom($stream, $count)
+    public function getRandom(StreamResource $stream, $count)
     {
-        $meta  = stream_get_meta_data($stream);
+        $meta = $stream->getMeta();
+        $random = new ValueRandom();
 
         if ($meta['seekable'] && $meta['stream_type'] != 'STDIO') {
-            $stat = fstat($stream);
-            $size = $stat['size'];
 
-            while ($this->random->count() < $count) {
+            $size = $stream->getSize();
+            while ($random->count() < $count) {
                 $rand = $this->utils->random(0, $size - 1);
-                fseek($stream, $rand);
-                $char = fgetc($stream);
-                $this->random->setChar($char);
+
+                $stream->seek($rand);
+                $char = $stream->getChar();
+                $random->setChar($char);
             }
         } else {
-            $finfo = finfo_open(FILEINFO_MIME);
-
-            $binary = false;
-            if ($meta['wrapper_type'] != 'http') {
-                $mime   = finfo_file($finfo, $meta['uri']);
-                $binary = strpos($mime, 'charset=binary') !== false;
-            }
-
+            $binary  = $stream->isBinary();
             $timeout = 2;
             $time = time();
-            while ($string = fread($stream, 1024)) {
-                if (time() - $time > $timeout && $this->random->count() >= $count) {
+            while ($string = $stream->read()) {
+                if (time() - $time > $timeout && $random->count() >= $count) {
                     break;
                 }
 
@@ -88,15 +68,15 @@ class Reader
                 }
 
                 // we don't know if there will be more
-                while ($this->random->count() < $count) {
+                while ($random->count() < $count) {
                     $size = strlen($string);
                     $rand = $this->utils->random(0, $size - 1);
                     $char = substr($string, $rand, 1);
-                    $this->random->setChar($char);
+                    $random->setChar($char);
                 }
             }
         }
 
-        return $this->random->shuffle()->slice($count);
+        return $random->shuffle()->slice($count);
     }
 }

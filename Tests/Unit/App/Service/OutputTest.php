@@ -25,7 +25,7 @@ class OutputTest extends \PHPUnit_Framework_TestCase
     public function setUp()
     {
         $this->sut = new Output();
-        $this->sut->setStream($this->getStreamMock());
+        $this->sut->setStreamFactory($this->getStreamMock());
 
         $stream = $this->getResource();
         $resources = [

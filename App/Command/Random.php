@@ -5,8 +5,9 @@ namespace App\Command;
 use App\Service\Utils;
 use App\Service\Output;
 use App\Service\Arguments;
-use App\Service\Stream;
+use App\Service\StreamFactory;
 use App\Service\Reader;
+use App\Resource\Stream as StreamResource;
 
 
 /**
@@ -30,8 +31,8 @@ class Random
     /** @var Arguments */
     private $arguments;
 
-    /** @var Stream */
-    private $stream;
+    /** @var StreamFactory */
+    private $streamFactory;
 
     /** @var Reader */
     private $reader;
@@ -61,13 +62,13 @@ class Random
     }
 
     /**
-     * @param Stream $stream
+     * @param StreamFactory $stream
      *
      * @return $this
      */
-    public function setStream(Stream $stream)
+    public function setStream(StreamFactory $stream)
     {
-        $this->stream = $stream;
+        $this->streamFactory = $stream;
 
         return $this;
     }
@@ -104,7 +105,6 @@ class Random
         $streams = $this->getStreams($string);
         $stream  = $this->selectStream($streams);
         $random  = $this->reader->getRandom($stream, $count);
-        $this->stream->close($stream);
 
         $this->output->out($random);
     }
@@ -112,38 +112,42 @@ class Random
     /**
      * @param string $param
      *
-     * @return \resource[]
+     * @return StreamResource[]
      */
     private function getStreams($param)
     {
-        $resource = $this->stream;
-
-        $stream = [];
+        $factory = $this->streamFactory;
+        $streams = [];
         if (!empty($param)) {
-            $stream[self::TYPE_URL]   = $resource->open($param);
-            $stream[self::TYPE_PARAM] = $resource->open('data:text/plain,' . $param);
+            $streams[self::TYPE_URL]   = $factory->create($param);
+            $streams[self::TYPE_PARAM] = $factory->create('data:text/plain,' . $param);
         }
-        $stream[self::TYPE_STDIN]  = $resource->open('php://stdin');
-        $stream[self::TYPE_RANDOM] = $resource->open('/dev/urandom');
+        $streams[self::TYPE_STDIN]  = $factory->create('php://stdin');
+        $streams[self::TYPE_RANDOM] = $factory->create('/dev/urandom');
 
-        return $resource->filterValidStreams($stream);
+        return array_filter(
+            $streams,
+            function($stream) {
+                return $stream !== false;
+            }
+        );
     }
 
     /**
-     * @param \resource[] $streams
+     * @param StreamResource[] $streams
      *
-     * @return \resource
+     * @return StreamResource
      * @throws \RuntimeException
      */
     private function selectStream(array $streams)
     {
         $selected = false;
         foreach ($streams as $key => $stream) {
-            if (!$selected && $this->stream->exists($stream)) {
+            if (!$selected && $stream->exists()) {
                 $this->output->message('selected stream: ' . $key);
                 $selected = $key;
             } else {
-                $this->stream->close($stream);
+                $stream->close();
             }
         }
 

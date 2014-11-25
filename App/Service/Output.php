@@ -2,6 +2,8 @@
 
 namespace App\Service;
 
+use App\Resource\Stream as StreamResource;
+
 
 /**
  * Class Output
@@ -15,20 +17,20 @@ class Output
     const TYPE_OUTPUT  = 'php://output';
     const DEFAULT_MODE = 'w';
 
-    /** @var \resource[] */
+    /** @var Resource[] */
     private $resources = [];
 
-    /** @var Stream */
-    private $stream;
+    /** @var StreamFactory */
+    private $streamFactory;
 
     /**
-     * @param Stream $stream
+     * @param StreamFactory $stream
      *
      * @return $this
      */
-    public function setStream(Stream $stream)
+    public function setStreamFactory(StreamFactory $stream)
     {
-        $this->stream = $stream;
+        $this->streamFactory = $stream;
 
         return $this;
     }
@@ -46,9 +48,10 @@ class Output
     }
 
     /**
-     * @param string $type
+     * @param $type
      *
-     * @return resource
+     * @return StreamResource
+     * @throws \InvalidArgumentException
      */
     private function getResource($type)
     {
@@ -57,7 +60,7 @@ class Output
                 case self::TYPE_STDOUT:
                 case self::TYPE_ERR:
                 case self::TYPE_OUTPUT:
-                    $this->resources[$type] = $this->stream->open($type, self::DEFAULT_MODE);
+                    $this->resources[$type] = $this->streamFactory->create($type, self::DEFAULT_MODE);
                     break;
                 default:
                     throw new \InvalidArgumentException('Resource type "' . $type . '" unknown');
@@ -73,10 +76,7 @@ class Output
      */
     public function error($string)
     {
-        fwrite(
-            $this->getResource(self::TYPE_ERR),
-            $this->prepareMessage($string)
-        );
+        $this->getResource(self::TYPE_ERR)->write($this->prepareMessage($string));
     }
 
     /**
@@ -84,10 +84,7 @@ class Output
      */
     public function out($string)
     {
-        fwrite(
-            $this->getResource(self::TYPE_STDOUT),
-            $this->prepareMessage($string)
-        );
+        $this->getResource(self::TYPE_STDOUT)->write($this->prepareMessage($string));
     }
 
     /**
@@ -95,10 +92,7 @@ class Output
      */
     public function message($string)
     {
-        fwrite(
-            $this->getResource(self::TYPE_OUTPUT),
-            $this->prepareMessage($string)
-        );
+        $this->getResource(self::TYPE_OUTPUT)->write($this->prepareMessage($string));
     }
 
     /**
@@ -125,8 +119,9 @@ class Output
 
     public function __destruct()
     {
+        /** @var StreamResource $resource */
         foreach ($this->resources as $resource) {
-            $this->stream->close($resource);
+            $resource->close();
         }
     }
 }

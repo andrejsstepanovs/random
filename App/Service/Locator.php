@@ -2,6 +2,8 @@
 
 namespace App\Service;
 
+use App\Command\Random;
+
 
 /**
  * Class Locator
@@ -12,7 +14,7 @@ class Locator
 {
     const COMMAND_RANDOM  = 'command.random';
     const SERVICE_OUTPUT  = 'service.output';
-    const SERVICE_STREAMS = 'service.streams';
+    const STREAM_FACTORY = 'service.streams';
     const SERVICE_READER  = 'service.reader';
     const SERVICE_UTILS   = 'service.utils';
     const ARGUMENTS       = 'arguments';
@@ -27,7 +29,7 @@ class Locator
     {
         if (!isset($this->services[self::SERVICE_OUTPUT])) {
             $output = new Output();
-            $output->setStream($this->getServiceStream());
+            $output->setStreamFactory($this->getStreamFactory());
 
             $this->services[self::SERVICE_OUTPUT] = $output;
         }
@@ -49,15 +51,15 @@ class Locator
     }
 
     /**
-     * @return Resource
+     * @return StreamFactory
      */
-    public function getServiceStream()
+    public function getStreamFactory()
     {
-        if (!isset($this->services[self::SERVICE_STREAMS])) {
-            $this->services[self::SERVICE_STREAMS] = new Stream();
+        if (!isset($this->services[self::STREAM_FACTORY])) {
+            $this->services[self::STREAM_FACTORY] = new StreamFactory();
         }
 
-        return $this->services[self::SERVICE_STREAMS];
+        return $this->services[self::STREAM_FACTORY];
     }
 
     /**
@@ -68,7 +70,6 @@ class Locator
         if (!isset($this->services[self::SERVICE_READER])) {
             $reader = new Reader();
             $reader->setUtils($this->getServiceUtils());
-            $reader->setRandom(new \App\Value\Random());
 
             $this->services[self::SERVICE_READER] = $reader;
         }
@@ -94,9 +95,9 @@ class Locator
     public function getCommandRandom()
     {
         if (!isset($this->services[self::COMMAND_RANDOM])) {
-            $command = new \App\Command\Random();
+            $command = new Random();
             $command->setOutput($this->getServiceOutput());
-            $command->setStream($this->getServiceStream());
+            $command->setStream($this->getStreamFactory());
             $command->setUtils($this->getServiceUtils());
             $command->setReader($this->getServiceReader());
 
