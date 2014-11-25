@@ -70,10 +70,6 @@ class Stream
      */
     public function getResource()
     {
-        if ($this->resource === null) {
-            throw new \RuntimeException('Resource not set');
-        }
-
         return $this->resource;
     }
 
@@ -83,7 +79,7 @@ class Stream
     public function close()
     {
         $resource = $this->getResource();
-        if (is_object($resource)) {
+        if ($resource && get_resource_type($resource) == 'stream') {
             fclose($resource);
         }
 
@@ -153,17 +149,6 @@ class Stream
      */
     public function isBinary()
     {
-        if ($this->binary === null) {
-            $meta = $this->getMeta();
-            $this->binary = false;
-            if ($meta[self::META_WRAPPER_TYPE] != 'http') {
-                $file = $meta['uri'];
-                $fileInfo = finfo_open(FILEINFO_MIME);
-                $mime     = finfo_file($fileInfo, $file);
-                $this->binary = strpos($mime, 'charset=binary') !== false;
-            }
-        }
-
         return $this->binary;
     }
 
@@ -237,7 +222,7 @@ class Stream
     public function exists()
     {
         $stream     = $this->getResource();
-        $streamType = $this->getMetaValue('stream_type');
+        $streamType = $this->getMetaValue(self::META_STREAM_TYPE);
 
         switch ($streamType) {
             case self::STREAM_TYPE_FILE:

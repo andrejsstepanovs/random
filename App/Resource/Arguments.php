@@ -46,7 +46,7 @@ class Arguments
     public function getArgument($count, $default = null)
     {
         if ($default !== null && !is_string($default)) {
-            throw new \RuntimeException('Default value is not string');
+            throw new \InvalidArgumentException('Default value is not string');
         }
 
         return !empty($this->arguments[$count]) ? $this->arguments[$count] : $default;
@@ -62,7 +62,7 @@ class Arguments
             return $value;
         }
 
-        throw new \RuntimeException('Provided argument "' . $value . '" is not numeric');
+        throw new \InvalidArgumentException('Provided argument "' . $value . '" is not numeric');
     }
 
     /**
