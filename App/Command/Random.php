@@ -2,7 +2,6 @@
 
 namespace App\Command;
 
-use App\Service\Utils;
 use App\Service\Output;
 use App\Service\StreamFactory;
 use App\Service\Reader;
