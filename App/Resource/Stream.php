@@ -119,9 +119,12 @@ class Stream
             $meta = $this->getMeta();
             $this->binary = false;
             if ($meta[self::TYPE] != 'http') {
-                $fileInfo = finfo_open(FILEINFO_MIME);
-                $mime     = finfo_file($fileInfo, $meta['uri']);
-                $this->binary = strpos($mime, 'charset=binary') !== false;
+                $file = $meta['uri'];
+                if (is_file($file)) {
+                    $fileInfo = finfo_open(FILEINFO_MIME);
+                    $mime     = finfo_file($fileInfo, $file);
+                    $this->binary = strpos($mime, 'charset=binary') !== false;
+                }
             }
         }
 
