@@ -82,29 +82,31 @@ class Reader
                 $string = bin2hex($string);
             }
 
-            $size = strlen($string);
+            $size = mb_strlen($string);
             if ($size == 1) {
                 continue;
             }
 
             // we don't know if there will be more
-            $randomCount = $random->count();
-            while ($randomCount < $count) {
+            $wordPopulationTime = time();
+            do {
                 $rand = $this->utils->random(0, $size - 1);
-                $char = substr($string, $rand, 1);
+                $char = mb_substr($string, $rand, 1);
 
                 $random->setChar($char);
 
                 $randomCount = $random->count();
-                if ($randomCount > $sliceCount) {
+                if ($randomCount >= $sliceCount) {
                     $random->shuffle()->slice($count);
                 }
-            }
+            } while ($randomCount < $count && time() - $wordPopulationTime < $this->timeout);
         }
 
         if (!$random->count()) {
             throw new \RuntimeException('STDIN have not enough characters');
         }
+
+        $random->shuffle()->slice($count);
     }
 
     /**
@@ -124,6 +126,12 @@ class Reader
             $this->getRandomFromSeekableFile($stream, $random, $count);
         } else {
             $this->getRandomFromStream($stream, $random, $count);
+        }
+
+        $randomCount = $random->count();
+        if ($randomCount != $count) {
+            $msg = 'Failed to find correct random character count. (' . $randomCount . ')';
+            throw new \RuntimeException($msg);
         }
 
         return $random->shuffle()->slice($count);

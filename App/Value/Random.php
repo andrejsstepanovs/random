@@ -5,6 +5,7 @@ namespace App\Value;
 
 use App\Resource\Stream as ResourceStream;
 use App\Resource\Stream;
+use App\Service\StreamFactory;
 
 /**
  * Class Random
@@ -16,9 +17,6 @@ class Random
     /** @var ResourceStream */
     private $stream;
 
-    /** @var ResourceStream */
-    private $bufferStream;
-
     /** @var array */
     private $escapeChars = [
         ' ',
@@ -26,12 +24,20 @@ class Random
     ];
 
     /**
-     * @param ResourceStream $stream
+     * @param ResourceStream $streamFactory
      */
-    public function __construct(ResourceStream $stream, ResourceStream $bufferStream)
+    public function __construct(StreamFactory $streamFactory)
     {
-        $this->stream       = $stream;
-        $this->bufferStream = $bufferStream;
+        $this->streamFactory = $streamFactory;
+        $this->stream        = $this->createStream();
+    }
+
+    /**
+     * @return ResourceStream
+     */
+    private function createStream()
+    {
+        return $this->streamFactory->create('php://temp', 'w');
     }
 
     /**
@@ -75,30 +81,29 @@ class Random
      */
     public function shuffle()
     {
-        $this->bufferStream->rewind();
+        $bufferStream = $this->createStream();
         $this->stream->rewind();
 
         while ($chars = $this->stream->read()) {
             $array = str_split($chars);
             shuffle($array);
-            $this->bufferStream->write(implode($array));
+            $bufferStream->write(implode($array));
         }
 
-        $this->switchStreams();
+        $this->switchStreams($bufferStream);
 
         return $this;
     }
 
     /**
+     * @param ResourceStream $bufferStream
+     *
      * @return $this
      */
-    private function switchStreams()
+    private function switchStreams(ResourceStream $bufferStream)
     {
-        $stream       = $this->stream;
-        $bufferStream = $this->bufferStream;
-
-        $this->stream       = $bufferStream;
-        $this->bufferStream = $stream;
+        $this->stream->close();
+        $this->stream = $bufferStream;
 
         return $this;
     }
@@ -111,21 +116,32 @@ class Random
     public function slice($count)
     {
         if ($this->count() > $count) {
-            $this->bufferStream->rewind();
+            $bufferStream = $this->createStream();
             $this->stream->rewind();
 
-            $length = 0;
             while ($chars = $this->stream->read()) {
-                $length += strlen($chars);
+                $charLen = mb_strlen($chars);
 
-                if ($length > $count) {
-                    break;
+                $break      = false;
+                $force      = true;
+                $bufferSize = $bufferStream->getSize($force);
+                if ($bufferSize + $charLen > $count) {
+                    if ($count - $charLen < 0) {
+                        $chars = mb_substr($chars, 0, $count - $charLen);
+                    } else {
+                        $chars = mb_substr($chars, 0, $count - $bufferSize);
+                    }
+
+                    $break = true;
                 }
 
-                $this->bufferStream->write($chars);
+                $bufferStream->write($chars);
+                if ($break) {
+                    break;
+                }
             }
 
-            $this->switchStreams();
+            $this->switchStreams($bufferStream);
         }
 
         return $this;
@@ -143,18 +159,10 @@ class Random
             $size = 0;
             $this->stream->rewind();
             while ($chars = $this->stream->read()) {
-                $size += strlen($chars);
+                $size += mb_strlen($chars);
             }
         }
 
         return $size;
-    }
-
-    /**
-     * @return string
-     */
-    public function __toString()
-    {
-        return $this->stream->getContents();
     }
 }
