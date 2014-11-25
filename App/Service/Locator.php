@@ -68,6 +68,7 @@ class Locator
         if (!isset($this->services[self::SERVICE_READER])) {
             $reader = new Reader();
             $reader->setUtils($this->getServiceUtils());
+            $reader->setTimeout(1);
 
             $this->services[self::SERVICE_READER] = $reader;
         }

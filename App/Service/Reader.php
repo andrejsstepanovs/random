@@ -16,6 +16,16 @@ class Reader
     /** @var Utils */
     private $utils;
 
+    /** @var int */
+    private $timeout;
+
+    public function setTimeout($timeoutSeconds)
+    {
+        $this->timeout = $timeoutSeconds;
+
+        return $this;
+    }
+
     /**
      * @param Utils $utils
      *
@@ -54,11 +64,10 @@ class Reader
      */
     private function getRandomFromStream(StreamResource $stream, ValueRandom $random, $count)
     {
-        $binary  = $stream->isBinary();
-        $timeout = 2;
-        $time = time();
+        $binary = $stream->isBinary();
+        $time   = time();
         while ($string = $stream->read()) {
-            if (time() - $time > $timeout && $random->count() >= $count) {
+            if (time() - $time >= $this->timeout && $random->count() >= $count) {
                 break;
             }
 
