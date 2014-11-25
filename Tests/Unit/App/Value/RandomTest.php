@@ -36,9 +36,9 @@ class RandomTest extends \PHPUnit_Framework_TestCase
     /**
      * @return Stream|\PHPUnit_Framework_MockObject_MockObject
      */
-    public function getStreamMock($new = false)
+    public function getStreamMock()
     {
-        if ($this->streamMock === null || $new) {
+        if ($this->streamMock === null) {
             $methods = [
                 'close',
                 'write',
@@ -52,9 +52,6 @@ class RandomTest extends \PHPUnit_Framework_TestCase
                 ->setMethods($methods)
                 ->getMock();
 
-            if ($new) {
-                return $streamMock;
-            }
             $this->streamMock = $streamMock;
         }
 

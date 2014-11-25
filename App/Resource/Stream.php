@@ -33,7 +33,8 @@ class Stream
     private $firstChar;
 
     /**
-     * @param \resource $resource
+     * @param string $filename
+     * @param string $mode
      */
     public function __construct($filename, $mode)
     {

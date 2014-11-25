@@ -12,11 +12,11 @@ use App\Command\Random;
  */
 class Locator
 {
-    const COMMAND_RANDOM  = 'command.random';
-    const SERVICE_OUTPUT  = 'service.output';
+    const COMMAND_RANDOM = 'command.random';
+    const SERVICE_OUTPUT = 'service.output';
     const STREAM_FACTORY = 'service.streams';
-    const SERVICE_READER  = 'service.reader';
-    const SERVICE_UTILS   = 'service.utils';
+    const SERVICE_READER = 'service.reader';
+    const SERVICE_UTILS  = 'service.utils';
 
     /** @var array */
     private $services = [];

@@ -23,7 +23,7 @@ class Random
     ];
 
     /**
-     * @param Stream $streamFactory
+     * @param StreamFactory $streamFactory
      */
     public function __construct(StreamFactory $streamFactory)
     {

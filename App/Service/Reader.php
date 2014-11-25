@@ -19,6 +19,11 @@ class Reader
     /** @var int */
     private $timeout;
 
+    /**
+     * @param int $timeoutSeconds
+     *
+     * @return $this
+     */
     public function setTimeout($timeoutSeconds)
     {
         $this->timeout = $timeoutSeconds;

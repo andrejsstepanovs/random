@@ -52,6 +52,9 @@ class Arguments
     }
 
     /**
+     * @param int $count
+     * @param int $default
+     *
      * @return int
      */
     public function getNumericArgument($count, $default = null)
@@ -65,6 +68,9 @@ class Arguments
     }
 
     /**
+     * @param int         $startCount
+     * @param string|null $default
+     *
      * @return null|string
      */
     public function getOtherArguments($startCount, $default = null)

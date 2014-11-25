@@ -81,7 +81,7 @@ class ReaderTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @return Random|\PHPUnit_Framework_MockObject_MockObject
+     * @return Stream|\PHPUnit_Framework_MockObject_MockObject
      */
     public function getStreamMock()
     {
