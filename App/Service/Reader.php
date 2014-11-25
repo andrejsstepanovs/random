@@ -30,6 +30,58 @@ class Reader
 
     /**
      * @param StreamResource $stream
+     * @param ValueRandom    $random
+     * @param int            $count
+     */
+    private function getRandomFromSeekableFile(StreamResource $stream, ValueRandom $random, $count)
+    {
+        $size = $stream->getSize();
+        while ($random->count() < $count) {
+            $rand = $this->utils->random(0, $size - 1);
+
+            $stream->seek($rand);
+            $char = $stream->getChar();
+            $random->setChar($char);
+        }
+    }
+
+    /**
+     * @param StreamResource $stream
+     * @param ValueRandom    $random
+     * @param int            $count
+     *
+     * @throws \RuntimeException
+     */
+    private function getRandomFromStream(StreamResource $stream, ValueRandom $random, $count)
+    {
+        $binary  = $stream->isBinary();
+        $timeout = 2;
+        $time = time();
+        while ($string = $stream->read()) {
+            if (time() - $time > $timeout && $random->count() >= $count) {
+                break;
+            }
+
+            if ($binary) {
+                $string = bin2hex($string);
+            }
+
+            if (empty($string)) {
+                throw new \RuntimeException('STDIN missing');
+            }
+
+            // we don't know if there will be more
+            while ($random->count() < $count) {
+                $size = strlen($string);
+                $rand = $this->utils->random(0, $size - 1);
+                $char = substr($string, $rand, 1);
+                $random->setChar($char);
+            }
+        }
+    }
+
+    /**
+     * @param StreamResource $stream
      * @param int            $count
      *
      * @return ValueRandom
@@ -40,40 +92,9 @@ class Reader
         $random = new ValueRandom();
 
         if ($stream->getMetaValue('seekable') && $stream->getMetaValue('stream_type') != 'STDIO') {
-
-            $size = $stream->getSize();
-            while ($random->count() < $count) {
-                $rand = $this->utils->random(0, $size - 1);
-
-                $stream->seek($rand);
-                $char = $stream->getChar();
-                $random->setChar($char);
-            }
+            $this->getRandomFromSeekableFile($stream, $random, $count);
         } else {
-            $binary  = $stream->isBinary();
-            $timeout = 2;
-            $time = time();
-            while ($string = $stream->read()) {
-                if (time() - $time > $timeout && $random->count() >= $count) {
-                    break;
-                }
-
-                if ($binary) {
-                    $string = bin2hex($string);
-                }
-
-                if (empty($string)) {
-                    throw new \RuntimeException('STDIN missing');
-                }
-
-                // we don't know if there will be more
-                while ($random->count() < $count) {
-                    $size = strlen($string);
-                    $rand = $this->utils->random(0, $size - 1);
-                    $char = substr($string, $rand, 1);
-                    $random->setChar($char);
-                }
-            }
+            $this->getRandomFromStream($stream, $random, $count);
         }
 
         return $random->shuffle()->slice($count);
