@@ -64,8 +64,9 @@ class Reader
      */
     private function getRandomFromStream(StreamResource $stream, ValueRandom $random, $count)
     {
-        $binary = $stream->isBinary();
-        $time   = time();
+        $sliceCount = $count * 3;
+        $binary     = $stream->isBinary();
+        $time       = time();
         while ($string = $stream->read()) {
             if (time() - $time >= $this->timeout && $random->count() >= $count) {
                 break;
@@ -84,7 +85,12 @@ class Reader
                 $size = strlen($string);
                 $rand = $this->utils->random(0, $size - 1);
                 $char = substr($string, $rand, 1);
+
                 $random->setChar($char);
+
+                if ($random->count() > $sliceCount) {
+                    $random->shuffle()->slice($count);
+                }
             }
         }
     }
