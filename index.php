@@ -19,4 +19,5 @@ try {
     $output = $locator->getServiceOutput();
     $output->error(get_class($exc) . ': ' . $exc->getMessage());
     $output->error('Trace: ' . $exc->getTraceAsString());
+    exit(1);
 }
