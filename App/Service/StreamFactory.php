@@ -2,7 +2,7 @@
 
 namespace App\Service;
 
-use App\Resource\Stream as Resource;
+use App\Resource\Stream as StreamResource;
 
 
 /**
@@ -18,7 +18,7 @@ class StreamFactory
      * @param string $filename
      * @param string $mode
      *
-     * @return Resource|bool
+     * @return StreamResource|bool
      */
     public function create($filename, $mode = self::DEFAULT_MODE)
     {
@@ -26,7 +26,7 @@ class StreamFactory
         if (!empty($filename)) {
             set_error_handler([get_class(), 'errorHandler']);
             try {
-                $stream = new Resource($filename, $mode);
+                $stream = new StreamResource($filename, $mode);
             } catch (\RuntimeException $exc) {
             }
             restore_error_handler();
