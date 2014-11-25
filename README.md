@@ -29,3 +29,4 @@ php phpunit.phar -c Tests/Unit/phpunit.xml
     ./index.php 10 http://google.com
     ls | ./index.php 100
     echo "AB" | ./index.php 100
+    ./index.php 100 "http://www.random.org/sequences/?min=1&max=2&col=1&format=plain&rnd=new"
