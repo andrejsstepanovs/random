@@ -120,7 +120,7 @@ class Random
 
         return array_filter(
             $streams,
-            function($stream) {
+            function ($stream) {
                 return $stream !== false;
             }
         );

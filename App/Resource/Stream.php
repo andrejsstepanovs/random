@@ -2,7 +2,6 @@
 
 namespace App\Resource;
 
-
 /**
  * Class Stream
  *

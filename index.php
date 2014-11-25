@@ -15,7 +15,6 @@ try {
     $locator->getCommandRandom()
             ->setArguments($arguments)
             ->execute();
-
 } catch (\Exception $exc) {
     $output = $locator->getServiceOutput();
     $output->error(get_class($exc) . ': ' . $exc->getMessage());
