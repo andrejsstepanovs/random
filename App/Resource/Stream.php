@@ -10,9 +10,13 @@ namespace App\Resource;
  */
 class Stream
 {
-    const META_WRAPPER_TYPE = 'wrapper_type';
-    const META_SEEKABLE     = 'seekable';
-    const META_STREAM_TYPE  = 'stream_type';
+    const META_WRAPPER_TYPE  = 'wrapper_type';
+    const META_SEEKABLE      = 'seekable';
+    const META_STREAM_TYPE   = 'stream_type';
+
+    const STREAM_TYPE_FILE   = 'RFC2397';
+    const STREAM_TYPE_SOCKET = 'tcp_socket/ssl';
+    const STREAM_TYPE_STDIO  = 'STDIO';
 
     /** @var \resource */
     private $resource;
@@ -198,27 +202,28 @@ class Stream
      */
     public function exists()
     {
-        $stream = $this->getResource();
-        $meta = stream_get_meta_data($stream);
+        $stream     = $this->getResource();
+        $streamType = $this->getMetaValue('stream_type');
 
-        switch ($meta['stream_type']) {
-            case 'RFC2397': // file
+        switch ($streamType) {
+            case self::STREAM_TYPE_FILE:
                 $stat = fstat($stream);
                 if ($stat['size'] > 0) {
                     return true;
                 }
                 break;
-            case 'tcp_socket/ssl': // url
-                $headers = !empty($meta['wrapper_data']) ? $meta['wrapper_data'] : [];
+            case self::STREAM_TYPE_SOCKET:
+                $wrapperData = $this->getMetaValue('wrapper_data');
+                $headers     = !empty($wrapperData) ? $wrapperData : [];
                 if (!empty($headers)) {
                     foreach ($headers as $header) {
-                        if (strpos($header, 'HTTP/1.0') !== false && strpos($header, '200') !== false) {
+                        if (strpos($header, 'HTTP/') !== false && strpos($header, '200') !== false) {
                             return true;
                         }
                     }
                 }
                 break;
-            case 'STDIO': // stdin
+            case self::STREAM_TYPE_STDIO:
                 stream_set_blocking($stream, false);
                 $input = fread($stream, 1);
                 if (!empty($input)) {
