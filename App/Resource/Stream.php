@@ -163,11 +163,13 @@ class Stream
     }
 
     /**
+     * @param bool $force
+     *
      * @return array
      */
-    public function getStat()
+    public function getStat($force = false)
     {
-        if ($this->stat === null) {
+        if ($this->stat === null || $force) {
             $this->stat = fstat($this->getResource());
         }
 
@@ -175,11 +177,13 @@ class Stream
     }
 
     /**
+     * @param bool $force
+     *
      * @return int
      */
-    public function getSize()
+    public function getSize($force = false)
     {
-        $stat = $this->getStat();
+        $stat = $this->getStat($force);
 
         return $stat['size'];
     }

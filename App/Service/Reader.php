@@ -67,6 +67,7 @@ class Reader
         $sliceCount = $count * 3;
         $binary     = $stream->isBinary();
         $time       = time();
+
         while ($string = $stream->read()) {
             if (time() - $time >= $this->timeout && $random->count() >= $count) {
                 break;
@@ -87,13 +88,15 @@ class Reader
             }
 
             // we don't know if there will be more
-            while ($random->count() < $count) {
+            $randomCount = $random->count();
+            while ($randomCount < $count) {
                 $rand = $this->utils->random(0, $size - 1);
                 $char = substr($string, $rand, 1);
 
                 $random->setChar($char);
 
-                if ($random->count() > $sliceCount) {
+                $randomCount = $random->count();
+                if ($randomCount > $sliceCount) {
                     $random->shuffle()->slice($count);
                 }
             }

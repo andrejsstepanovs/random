@@ -4,6 +4,7 @@ namespace App\Value;
 
 
 use App\Resource\Stream as ResourceStream;
+use App\Resource\Stream;
 
 /**
  * Class Random
@@ -135,13 +136,18 @@ class Random
      */
     public function count()
     {
-        $length = 0;
-        $this->stream->rewind();
-        while ($chars = $this->stream->read()) {
-            $length += strlen($chars);
+        if ($this->stream->getMetaValue(Stream::META_SEEKABLE)) {
+            $force = true;
+            $size  = $this->stream->getSize($force);
+        } else {
+            $size = 0;
+            $this->stream->rewind();
+            while ($chars = $this->stream->read()) {
+                $size += strlen($chars);
+            }
         }
 
-        return $length;
+        return $size;
     }
 
     /**
