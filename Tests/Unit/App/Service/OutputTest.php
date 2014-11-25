@@ -3,7 +3,8 @@
 namespace Tests\App\Service;
 
 use \App\Service\Output;
-use \App\Service\Stream;
+use \App\Resource\Stream;
+use \App\Service\StreamFactory;
 
 
 /**
@@ -19,41 +20,18 @@ class OutputTest extends \PHPUnit_Framework_TestCase
     /** @var Stream|\PHPUnit_Framework_MockObject_MockObject */
     private $streamMock;
 
-    /** @var \resource */
-    private $stream;
+    /** @var StreamFactory|\PHPUnit_Framework_MockObject_MockObject */
+    private $streamFactoryMock;
 
     public function setUp()
     {
         $this->sut = new Output();
-        $this->sut->setStreamFactory($this->getStreamMock());
+        $this->sut->setStreamFactory($this->getStreamFactoryMock());
 
-        $stream = $this->getResource();
-        $resources = [
-            Output::TYPE_ERR    => $stream,
-            Output::TYPE_STDOUT => $stream,
-            Output::TYPE_OUTPUT => $stream,
-        ];
-
-        $this->sut->setResources($resources);
-
-        $this->getStreamMock()->expects($this->exactly(count($resources)))->method('close');
-    }
-
-    public function tearDown()
-    {
-        fclose($this->getResource());
-    }
-
-    /**
-     * @return \resource
-     */
-    private function getResource()
-    {
-        if ($this->stream === null) {
-            $this->stream = fopen('php://memory', 'w');
-        }
-
-        return $this->stream;
+        $this->getStreamFactoryMock()
+             ->expects($this->any())
+             ->method('create')
+             ->will($this->returnValue($this->getStreamMock()));
     }
 
     /**
@@ -62,7 +40,7 @@ class OutputTest extends \PHPUnit_Framework_TestCase
     public function getStreamMock()
     {
         if ($this->streamMock === null) {
-            $methods = ['close'];
+            $methods = ['close', 'write'];
             $streamMock = $this
                 ->getMockBuilder('\App\Service\Stream')
                 ->setMethods($methods)
@@ -75,77 +53,65 @@ class OutputTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
+     * @return Stream|\PHPUnit_Framework_MockObject_MockObject
+     */
+    public function getStreamFactoryMock()
+    {
+        if ($this->streamFactoryMock === null) {
+            $methods = ['create'];
+            $streamMock = $this
+                ->getMockBuilder('\App\Service\StreamFactory')
+                ->setMethods($methods)
+                ->getMock();
+
+            $this->streamFactoryMock = $streamMock;
+        }
+
+        return $this->streamFactoryMock;
+    }
+
+    /**
      * @return array
      */
     public function messagesDataProvider()
     {
-        $class = new \stdClass();
-        $class->foo = 'bar';
-
         return [
             ['foo', 'foo' . PHP_EOL],
-            [
-                ['foo' => 'bar'],
-                'Array' . PHP_EOL
-                . '(' . PHP_EOL
-                . '    [foo] => bar' . PHP_EOL
-                . ')' . PHP_EOL . PHP_EOL
-            ],
-            [
-                $class,
-                'stdClass::__set_state(array(' . PHP_EOL
-                . "   'foo' => 'bar'," . PHP_EOL
-                . '))' . PHP_EOL
-            ],
+            [1, '1' . PHP_EOL],
         ];
     }
 
-    /**
-     * @param string $expected
-     */
-    private function assertStreamContent($expected)
+    public function testErrorMessage()
     {
-        $stream = $this->getResource();
-        rewind($stream);
-        $content = stream_get_contents($stream);
+        $message = 'string';
+        $this->getStreamMock()
+             ->expects($this->once())
+             ->method('write')
+             ->with($this->equalTo($message . PHP_EOL));
 
-        $this->assertEquals($expected, $content);
-    }
-
-    /**
-     * @dataProvider messagesDataProvider
-     *
-     * @param string $message
-     */
-    public function testErrorMessage($message, $expected)
-    {
         $this->sut->error($message);
-        $this->sut->__destruct();
-        $this->assertStreamContent($expected);
     }
 
-    /**
-     * @dataProvider messagesDataProvider
-     *
-     * @param string $message
-     */
-    public function testOutMessage($message, $expected)
+    public function testOutMessage()
     {
+        $message = 'string';
+        $this->getStreamMock()
+             ->expects($this->once())
+             ->method('write')
+             ->with($this->equalTo($message . PHP_EOL));
+
         $this->sut->out($message);
-        $this->sut->__destruct();
-        $this->assertStreamContent($expected);
     }
 
-    /**
-     * @dataProvider messagesDataProvider
-     *
-     * @param string $message
-     */
-    public function testMessageMessage($message, $expected)
+    public function testMessageMessage()
     {
+        $message = 'string';
+        $this->getStreamMock()
+             ->expects($this->once())
+             ->method('write')
+             ->with($this->equalTo($message . PHP_EOL));
+
         $this->sut->message($message);
-        $this->sut->__destruct();
-        $this->assertStreamContent($expected);
     }
 
 }
