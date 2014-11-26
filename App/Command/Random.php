@@ -5,6 +5,7 @@ namespace App\Command;
 use App\Service\Output;
 use App\Service\StreamFactory;
 use App\Service\Reader;
+use App\Service\Utils;
 use App\Resource\Arguments;
 use App\Resource\Stream as StreamResource;
 use App\Value\Random as ValueRandom;
@@ -34,6 +35,9 @@ class Random
     /** @var Reader */
     private $reader;
 
+    /** @var Utils */
+    private $utils;
+
     /**
      * @param Arguments $arguments
      *
@@ -54,6 +58,18 @@ class Random
     public function setOutput(Output $output)
     {
         $this->output = $output;
+
+        return $this;
+    }
+
+    /**
+     * @param Utils $utils
+     *
+     * @return $this
+     */
+    public function setUtils(Utils $utils)
+    {
+        $this->utils = $utils;
 
         return $this;
     }
@@ -90,7 +106,7 @@ class Random
         $count  = $this->arguments->getNumericArgument(1);
         $string = $this->arguments->getOtherArguments(2);
 
-        $value = new ValueRandom($this->streamFactory);
+        $value = new ValueRandom($this->streamFactory, $this->utils);
 
         $streams = $this->getStreams($string);
         $stream  = $this->selectStream($streams);

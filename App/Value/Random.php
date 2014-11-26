@@ -4,6 +4,7 @@ namespace App\Value;
 
 use App\Resource\Stream;
 use App\Service\StreamFactory;
+use App\Service\Utils;
 
 
 /**
@@ -16,6 +17,9 @@ class Random
     /** @var Stream */
     private $stream;
 
+    /** @var Utils */
+    private $utils;
+
     /** @var array */
     private $escapeChars = [
         ' ',
@@ -25,9 +29,10 @@ class Random
     /**
      * @param StreamFactory $streamFactory
      */
-    public function __construct(StreamFactory $streamFactory)
+    public function __construct(StreamFactory $streamFactory, Utils $utils)
     {
         $this->streamFactory = $streamFactory;
+        $this->utils         = $utils;
         $this->stream        = $this->createStream();
     }
 
@@ -83,26 +88,26 @@ class Random
         $bufferStream = $this->createStream();
         $this->stream->rewind();
 
-        while ($chars = $this->stream->read()) {
-            $array = str_split($chars);
-            shuffle($array);
-            $bufferStream->write(implode($array));
+        $size = $this->stream->getSize(true);
+        while ($bufferStream->getSize(true) < $size) {
+            $this->stream->seek($this->utils->random(0, $size));
+            $bufferStream->write($this->stream->read());
         }
 
-        $this->switchStreams($bufferStream);
+        $this->setStream($bufferStream);
 
         return $this;
     }
 
     /**
-     * @param Stream $bufferStream
+     * @param Stream $stream
      *
      * @return $this
      */
-    private function switchStreams(Stream $bufferStream)
+    private function setStream(Stream $stream)
     {
         $this->stream->close();
-        $this->stream = $bufferStream;
+        $this->stream = $stream;
 
         return $this;
     }
@@ -140,7 +145,7 @@ class Random
                 }
             }
 
-            $this->switchStreams($bufferStream);
+            $this->setStream($bufferStream);
         }
 
         return $this;

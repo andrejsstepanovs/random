@@ -6,6 +6,7 @@ use \App\Command\Random;
 use \App\Resource\Stream;
 use \App\Service\StreamFactory;
 use \App\Service\Reader;
+use \App\Service\Utils;
 use \App\Resource\Arguments;
 use \App\Service\Output;
 use \App\Value\Random as ValueRandom;
@@ -39,6 +40,9 @@ class RandomTest extends \PHPUnit_Framework_TestCase
     /** @var ValueRandom|\PHPUnit_Framework_MockObject_MockObject */
     private $valueRandomMock;
 
+    /** @var Utils|\PHPUnit_Framework_MockObject_MockObject */
+    private $utilsMock;
+
     public function setUp()
     {
         $this->sut = new Random();
@@ -46,6 +50,7 @@ class RandomTest extends \PHPUnit_Framework_TestCase
         $this->sut->setReader($this->getReaderMock());
         $this->sut->setOutput($this->getOutputMock());
         $this->sut->setStreamFactory($this->getStreamFactoryMock());
+        $this->sut->setUtils($this->getUtilsMock());
     }
 
     /**
@@ -82,6 +87,24 @@ class RandomTest extends \PHPUnit_Framework_TestCase
         }
 
         return $this->outputMock;
+    }
+
+    /**
+     * @return Utils|\PHPUnit_Framework_MockObject_MockObject
+     */
+    public function getUtilsMock()
+    {
+        if ($this->utilsMock === null) {
+            $methods = ['random'];
+            $mock = $this
+                ->getMockBuilder('\App\Service\Utils')
+                ->setMethods($methods)
+                ->getMock();
+
+            $this->utilsMock = $mock;
+        }
+
+        return $this->utilsMock;
     }
 
     /**

@@ -112,6 +112,7 @@ class Locator
             $command->setOutput($this->getServiceOutput());
             $command->setStreamFactory($this->getStreamFactory());
             $command->setReader($this->getServiceReader());
+            $command->setUtils($this->getServiceUtils());
 
             $this->services[self::COMMAND_RANDOM] = $command;
         }

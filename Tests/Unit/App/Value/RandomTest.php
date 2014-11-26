@@ -5,6 +5,7 @@ namespace Tests\App\Service;
 use \App\Value\Random;
 use \App\Resource\Stream;
 use \App\Service\StreamFactory;
+use \App\Service\Utils;
 
 
 /**
@@ -23,6 +24,9 @@ class RandomTest extends \PHPUnit_Framework_TestCase
     /** @var Stream|\PHPUnit_Framework_MockObject_MockObject */
     private $streamMock;
 
+    /** @var Utils|\PHPUnit_Framework_MockObject_MockObject */
+    private $utilsMock;
+
     public function setUp()
     {
         $this->getStreamFactoryMock()
@@ -30,7 +34,7 @@ class RandomTest extends \PHPUnit_Framework_TestCase
              ->method('create')
              ->will($this->returnValue($this->getStreamMock()));
 
-        $this->sut = new Random($this->getStreamFactoryMock());
+        $this->sut = new Random($this->getStreamFactoryMock(), $this->getUtilsMock());
     }
 
     /**
@@ -56,6 +60,24 @@ class RandomTest extends \PHPUnit_Framework_TestCase
         }
 
         return $this->streamMock;
+    }
+
+    /**
+     * @return Utils|\PHPUnit_Framework_MockObject_MockObject
+     */
+    public function getUtilsMock()
+    {
+        if ($this->utilsMock === null) {
+            $methods = ['random'];
+            $mock = $this
+                ->getMockBuilder('\App\Service\Utils')
+                ->setMethods($methods)
+                ->getMock();
+
+            $this->utilsMock = $mock;
+        }
+
+        return $this->utilsMock;
     }
 
     /**
